@@ -6,6 +6,7 @@ Usage: $ python merge.py /output/dir /voc1 /voc2 /voc2 /voc3
 
 import os
 import shutil
+import xml.etree.ElementTree
 
 def merge(datasets, output):
     try:
@@ -33,7 +34,7 @@ def merge(datasets, output):
                 if len(line) == 2:
                     line = "{0}_{1} {2}".format(n, line[0], line[1])
                 else:
-                    line = "{0}_{1}".format(n, line[0])
+                    line = "{0}_{1}\n".format(n, line[0])
                 out.write(line)
 
         # transcraibe JPEGs
@@ -49,6 +50,12 @@ def merge(datasets, output):
             path = "{0}/Annotations/{1}".format(dataset, anno)
             target = "{0}/Annotations/{1}_{2}".format(output, n, anno)
             shutil.copy(path, target)
+
+            tree = xml.etree.ElementTree.parse(target)
+            root = tree.getroot()
+            root.find("filename").text = "{0}_{1}".format(n, root.find("filename").text)
+            open(target,"w").write(xml.etree.ElementTree.tostring(root))
+
 
 if __name__ == "__main__":
     import sys
